@@ -3,59 +3,57 @@ package com.varun.auth.service.impl;
 
 import java.util.List;
 
+import com.varun.auth.AuthApplication;
+import com.varun.auth.domain.User;
+import com.varun.auth.models.Status;
+import com.varun.auth.repository.UserRepository;
+import com.varun.auth.service.UserService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.varun.auth.domain.User;
-import com.varun.auth.repository.RoleRepository;
-import com.varun.auth.repository.UserRepository;
-import com.varun.auth.service.UserService;
-
 @Service
 public class UserServiceImpl implements UserService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AuthApplication.class);
 	
 	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired
-	private RoleRepository roleRepository;
 
-	/*
-	 * @Override public User createUser(User user, Set<UserRole> userRoles) { User
-	 * localUser = userRepository.findByUsername(user.getUsername());
-	 * 
-	 * if (localUser != null) {
-	 * LOG.info("user {} already exists. Nothing will be done.",
-	 * user.getUsername()); } else { for (UserRole ur : userRoles) {
-	 * roleRepository.save(ur.getRole()); }
-	 * 
-	 * user.getUserRoles().addAll(userRoles); localUser = userRepository.save(user);
-	 * }
-	 * 
-	 * return localUser; }
-	 */	
 	@Override
-	public void createUser(User user) {
-		List<User> localuser = userRepository.findByUserId(user.getUsername());
+	public Status createUser(User user) {
 		
-		LOG.info(":::::::: user {} found.", localuser);
+		String errorDesc = null;
+		String errorCode = null;
+		String status = null;
 		
+		Status createStatus = new Status();
 		
-		if (!localuser.isEmpty()) {
-			LOG.info("user {} already exists. Nothing will be done.", user.getUsername());
+		User localuser = userRepository.findByUsername(user.getUsername());		
+		
+		if (localuser != null) {
+			errorDesc = "user "+user.getUsername()+" already exists";
+			errorCode = "ERR_USER_ALREADY_EXISTS";
+			status = "FAILED";
 		}else{
-			LOG.info("creating new user '{}'.", user.getUsername());
 			User localUser = userRepository.save(user);
+			status = "CREATED";
 		}
+		return createStatus;
 	}
 
 	@Override
 	public User save(User user) {
 		return userRepository.save(user);
 	}
+
+	@Override
+	public User findByUsername(String username) {
+		return userRepository.findByUsername(username);
+	}
+
 
 }
